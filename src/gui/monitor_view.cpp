@@ -33,7 +33,7 @@ void MonitorPage(Model& model,const State& state){
             ImGui::EndTabItem();
         }
         if(ImGui::BeginTabItem("基准测试")){
-            if(selected)Benchmark(*selected);else ImGui::TextDisabled("尚未选择磁盘。");
+            if(selected)Benchmark(model,*selected,state);else ImGui::TextDisabled("尚未选择磁盘。");
             ImGui::EndTabItem();
         }
         if(ImGui::BeginTabItem("事件诊断")){

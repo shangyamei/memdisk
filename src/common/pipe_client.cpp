@@ -1,19 +1,19 @@
 #include "client.h"
 
 namespace md {
-MD_REPLY ServiceCall(const MD_REQUEST& request) {
+MD_REPLY ServiceCall(const MD_REQUEST& request,const WCHAR* pipePath) {
     const auto deadline = GetTickCount64() + 5000;
     Handle pipe;
     DWORD error = ERROR_FILE_NOT_FOUND;
     do {
-        pipe.value = CreateFileW(MD_PIPE_PATH, GENERIC_READ | GENERIC_WRITE, 0,
+        pipe.value = CreateFileW(pipePath, GENERIC_READ | GENERIC_WRITE, 0,
             nullptr, OPEN_EXISTING, SECURITY_SQOS_PRESENT | SECURITY_IDENTIFICATION, nullptr);
         if (pipe) break;
         error = GetLastError();
         if (error != ERROR_PIPE_BUSY && error != ERROR_FILE_NOT_FOUND) break;
         // WaitNamedPipe returns immediately when no server instance exists.
         // Retry the gap between disconnect and a newly listening instance.
-        if (error == ERROR_PIPE_BUSY) WaitNamedPipeW(MD_PIPE_PATH, 50);
+        if (error == ERROR_PIPE_BUSY) WaitNamedPipeW(pipePath, 50);
         else Sleep(20);
     } while (GetTickCount64() < deadline);
     if (!pipe) return Failure(error, L"Connect service");

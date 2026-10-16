@@ -31,11 +31,16 @@ pass e.g. `-VisualStudio 2026 -WdkVersion 10.0.28000.0`; retest the resulting
 driver in the isolated VM. Packaging prefers the SDK 26100 x64 signing tool,
 falling back to the newest installed Windows 10 SDK x64 signing tool.
 
-Output: `dist/MemDisk-0.1.6-dev-win-x64.zip`.
+Output: `dist/MemDisk-0.1.8-dev-win-x64.zip`.
 Disk capacity has no fixed single-disk or aggregate cap: each creation may request
 up to 80% of currently available physical RAM, in whole MiB (maximum 8 instances).
 Allocation and filesystem formatting can still fail. Replace the driver, service,
 CLI and GUI together; see [capacity update](docs/CAPACITY-UPDATE.md).
+Version 0.1.7 fixes benchmark handle cleanup, cancellation and conflicting GUI
+operations; see [upgrade and regression steps](docs/UPGRADE-0.1.7.md).
+Version 0.1.8 supports uninstall after reboot or partial removal; the script
+cross-checks driver registration/state and the control device, retaining active
+disk protection. See [uninstall recovery](docs/UPGRADE-0.1.8.md).
 All user-mode binaries statically link the MSVC runtime. The VM needs no compiler,
 WDK, SDK, Visual Studio, Git, Python, Node.js or VC redistributable installation.
 Windows PowerShell 5.1 and built-in Windows commands are sufficient.

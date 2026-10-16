@@ -4,16 +4,34 @@
 
 namespace ui {
 Model::Model():worker_([this](std::stop_token stop){Run(stop);}){}
-Model::~Model(){worker_.request_stop();CancelSynchronousIo(worker_.native_handle());}
-State Model::Snapshot(){std::lock_guard lock(mutex_);return state_;}
+Model::~Model(){
+    worker_.request_stop();CancelSynchronousIo(worker_.native_handle());
+    benchmark_.Shutdown();
+}
+State Model::Snapshot(){std::lock_guard lock(mutex_);state_.Benchmark=benchmark_.Snapshot();return state_;}
 void Model::Select(ULONGLONG id){
     std::lock_guard lock(mutex_);if(state_.Selected==id)return;
     state_.Selected=id;state_.Samples.clear();
 }
 bool Model::Submit(const MD_REQUEST& request){
     std::lock_guard lock(mutex_);if(state_.Busy)return false;
+    if(BenchmarkConflicts(benchmark_.Snapshot(),request)){
+        state_.Message=L"该实例正在测试或清理，请停止测试并等待结束后再操作";
+        return false;
+    }
     pending_=request;state_.Busy=true;state_.Message=L"操作进行中…";return true;
 }
+bool Model::StartBenchmark(ULONGLONG id){
+    // Serialize admission with Submit; a rendered snapshot can be stale.
+    std::lock_guard lock(mutex_);
+    if(state_.Busy||state_.Reply.Error)return false;
+    for(ULONG i=0;i<state_.Reply.Count;++i){
+        const auto& disk=state_.Reply.Disks[i];
+        if(disk.Id==id&&disk.Mounted)return benchmark_.Start(disk);
+    }
+    return false;
+}
+void Model::StopBenchmark(){std::lock_guard lock(mutex_);benchmark_.Stop();}
 void Model::Run(std::stop_token stop){
     MD_DISK_INFO previous{};ULONGLONG previousTick=0,spaceTick=0;
     while(!stop.stop_requested()){

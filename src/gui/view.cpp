@@ -65,7 +65,9 @@ static void DestroyDialog(Model& model,const State& state,DiskUiActions& actions
         ImGui::Text("容量：%.0f MiB",target->Bytes/double(MD_MIB));
         ImGui::TextUnformatted("全部文件将丢失，预留内存将被释放。");
     }else ImGui::TextUnformatted("该磁盘已不存在，或当前无法确认目标实例。");
-    ImGui::BeginDisabled(!target||state.Busy);
+    const bool testing=state.Benchmark.Running&&state.Benchmark.Id==actions.DestroyId;
+    if(testing)ImGui::TextUnformatted("该实例正在测试或清理，请等待测试结束。");
+    ImGui::BeginDisabled(!target||state.Busy||testing);
     if(ImGui::Button("确认销毁")&&target){
         if(model.Submit(md::Request(MdDestroy,actions.DestroyId)))ImGui::CloseCurrentPopup();
     }

@@ -5,6 +5,8 @@
 #include "client.h"
 #include "memdisk/telemetry.h"
 #include "memdisk/capacity.h"
+#include "memdisk/json.h"
+#include <sstream>
 #include <stdexcept>
 
 static_assert(std::is_standard_layout_v<MD_REQUEST>);
@@ -16,11 +18,15 @@ static_assert(sizeof(MD_COUNTERS)==(6+MD_LATENCY_BUCKETS)*8);
 void TransportTests();
 void SecurityTests();
 void DetachTests();
+void BenchmarkTests();
 static void Require(bool value) { if(!value)throw std::runtime_error("requirement failed"); }
 int main(){
     std::cout<<"Shared x64 ABI verified: request="<<sizeof(MD_REQUEST)
         <<", reply="<<sizeof(MD_REPLY)<<"\n";
     try {
+        std::wostringstream json;
+        md::WriteJsonString(json,L"拒绝访问\n\"\\\x0001\xd83d\xde00");
+        Require(json.str()==L"\"\\u62d2\\u7edd\\u8bbf\\u95ee\\u000a\\\"\\\\\\u0001\\ud83d\\ude00\"");
         Require(MdCapacityBudget(0)==0);
         Require(MdCapacityBudget(4)==3);
         Require(MdCapacityBudget(5)==4);
@@ -54,6 +60,7 @@ int main(){
         TransportTests();
         SecurityTests();
         DetachTests();
+        BenchmarkTests();
         std::cout<<"PASS: label policy, rate/percentile/reset handling, named-pipe roundtrips.\n";
         return 0;
     } catch(const std::exception& e) {std::cerr<<e.what()<<"\n";return 1;}

@@ -51,7 +51,8 @@ void DiskTile(Model& model,const State& state,const MD_DISK_INFO& disk,float hei
     }
     if(space)ImGui::TextDisabled("可用 %s · 已用 %.1f%%",Bytes(space->Free).c_str(),fraction*100);
     else ImGui::TextDisabled("%s",disk.Mounted?"等待空间采样 / 暂不可用":"已卸载 · 空间未采样");
-    ImGui::BeginDisabled(state.Busy);
+    const bool testing=state.Benchmark.Running&&state.Benchmark.Id==disk.Id;
+    ImGui::BeginDisabled(state.Busy||testing);
     if(ImGui::Button(disk.Mounted?"卸载":"挂载"))
         model.Submit(md::Request(disk.Mounted?MdUnmount:MdMount,disk.Id));
     ImGui::SameLine();
@@ -62,6 +63,7 @@ void DiskTile(Model& model,const State& state,const MD_DISK_INFO& disk,float hei
         ShellExecuteW(Host.Handle,L"open",path,nullptr,nullptr,SW_SHOW);
     }
     ImGui::EndDisabled();ImGui::EndDisabled();
+    if(testing)ImGui::TextDisabled("正在测试或清理，请到基准测试页停止并等待结束");
     ImGui::EndChild();
     if(selected)ImGui::PopStyleColor();
     ImGui::PopID();
@@ -70,7 +72,7 @@ void DiskTile(Model& model,const State& state,const MD_DISK_INFO& disk,float hei
 void DiskList(Model& model,const State& state,DiskUiActions& actions){
     if(!state.Reply.Count){ImGui::TextDisabled("尚无磁盘。请先安装并启动 VM 中的驱动与服务。");return;}
     const float tile=3*ImGui::GetTextLineHeightWithSpacing()+2*ImGui::GetStyle().WindowPadding.y+
-        16*Host.Dpi+ImGui::GetFrameHeightWithSpacing();
+        16*Host.Dpi+ImGui::GetFrameHeightWithSpacing()+ImGui::GetTextLineHeightWithSpacing();
     ImGui::BeginChild("DiskList",ImVec2(0,0));
     for(ULONG i=0;i<state.Reply.Count;++i)DiskTile(model,state,state.Reply.Disks[i],tile,actions);
     ImGui::EndChild();

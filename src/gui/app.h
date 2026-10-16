@@ -1,5 +1,6 @@
 #pragma once
 #include "client.h"
+#include "benchmark.h"
 #include <d3d11.h>
 #include <imgui.h>
 #include <implot.h>
@@ -21,11 +22,13 @@ struct State {
     std::vector<Space> Spaces;
     std::wstring Message;
     bool Busy=false;
+    BenchmarkResult Benchmark;
 };
 class Model {
     std::mutex mutex_;
     State state_;
     std::optional<MD_REQUEST> pending_;
+    BenchmarkRunner benchmark_;
     std::jthread worker_;
     void Run(std::stop_token stop);
 public:
@@ -34,6 +37,8 @@ public:
     State Snapshot();
     void Select(ULONGLONG id);
     bool Submit(const MD_REQUEST& request);
+    bool StartBenchmark(ULONGLONG id);
+    void StopBenchmark();
 };
 struct Window {
     HWND Handle=nullptr;
@@ -54,6 +59,6 @@ void DiskList(Model& model,const State& state,DiskUiActions& actions);
 void MonitorPage(Model& model,const State& state);
 void Performance(const State& state);
 void Capacity(const MD_DISK_INFO& disk,const State& state);
-void Benchmark(const MD_DISK_INFO& disk);
+void Benchmark(Model& model,const MD_DISK_INFO& disk,const State& state);
 std::string Utf8(const std::wstring& value);
 }

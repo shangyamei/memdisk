@@ -1,4 +1,4 @@
-# Development build 0.1.6 — implementation and validation status
+# Development build 0.1.8 — implementation and validation status
 
 This is the first buildable VM validation milestone. It is not completion of the
 entire SRS and is not a production release. Do not put valuable data on it.
@@ -19,6 +19,11 @@ entire SRS and is not a production release. Do not put valuable data on it.
 - Worker-thread telemetry, real device throughput, IOPS and approximate P99.
 - Background filesystem space sampling and a real sequential read/write benchmark
   (16 MiB file, 1 MiB blocks, QD1, no buffering, write-through, full verification).
+- Benchmark identity handles close before file I/O; completion is published only
+  after file/event/buffer cleanup. Pending overlapped I/O can be cancelled and is
+  drained before resources are released. The GUI blocks conflicting operations
+  on the benchmark instance through cleanup, including across tab switches.
+  This is coordination within one GUI; other clients still use safe volume locking.
 - Static user-mode runtime, file-based development signing, packaged public cert.
 - Built-in PowerShell VM install, uninstall and filesystem integrity smoke test.
 
@@ -92,3 +97,14 @@ See UPGRADE-0.1.4.md; this is a GUI-only change using the same service protocol.
 
 0.1.5 reduces the footer to one font-height line, combining connection, sampling
 and operation messages. Long messages are clipped with full text on hover.
+
+0.1.7 fixes benchmark resource lifetime and local operation coordination; see
+UPGRADE-0.1.7.md. This addresses confirmed code defects, but does not establish
+the root cause of the reported NTFS lock failure or prove existing instances recover.
+
+0.1.8 fixes uninstall when the demand-start driver is stopped or its registration
+is already absent. SCM state and missing control-device error 2 must agree;
+unknown/running-inaccessible states still stop cleanup. State is rechecked after
+management-service removal. CLI JSON escapes non-ASCII text to preserve errors
+across code pages. Mocked uninstall regressions run under Windows PowerShell 5.1;
+actual service/driver uninstall still requires VM validation. See UPGRADE-0.1.8.md.

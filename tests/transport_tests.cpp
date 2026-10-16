@@ -4,11 +4,15 @@
 #include <thread>
 #include <chrono>
 
+static std::wstring TestPipe(){
+    return std::wstring(L"\\\\.\\pipe\\MemDisk.TransportTest.")+std::to_wstring(GetCurrentProcessId());
+}
 static void Roundtrip(ULONG version,bool truncate,DWORD expectedError) {
+    const auto pipePath=TestPipe();
     std::promise<bool> ready;
     auto future=ready.get_future();
     std::jthread server([&]{
-        md::Handle pipe(CreateNamedPipeW(MD_PIPE_PATH,PIPE_ACCESS_DUPLEX|FILE_FLAG_FIRST_PIPE_INSTANCE,
+        md::Handle pipe(CreateNamedPipeW(pipePath.c_str(),PIPE_ACCESS_DUPLEX|FILE_FLAG_FIRST_PIPE_INSTANCE,
             PIPE_TYPE_MESSAGE|PIPE_READMODE_MESSAGE|PIPE_WAIT,1,sizeof(MD_REPLY),sizeof(MD_REQUEST),0,nullptr));
         ready.set_value(static_cast<bool>(pipe));
         if(!pipe)return;
@@ -23,15 +27,16 @@ static void Roundtrip(ULONG version,bool truncate,DWORD expectedError) {
         FlushFileBuffers(pipe.value);
         DisconnectNamedPipe(pipe.value);
     });
-    if(!future.get())throw std::runtime_error("Test pipe unavailable (is a real service already running?)");
-    const auto reply=md::ServiceCall(md::Request(MdList));
+    if(!future.get())throw std::runtime_error("Isolated test pipe unavailable");
+    const auto reply=md::ServiceCall(md::Request(MdList),pipePath.c_str());
     if(reply.Error!=expectedError)throw std::runtime_error("Unexpected transport error");
     if(!reply.Error&&reply.Disks[0].Id!=0x123456789ull)throw std::runtime_error("64-bit wire data corrupted");
 }
 static void DelayedPipeTest(){
-    std::jthread server([]{
+    const auto pipePath=TestPipe();
+    std::jthread server([&]{
         std::this_thread::sleep_for(std::chrono::milliseconds(150));
-        md::Handle pipe(CreateNamedPipeW(MD_PIPE_PATH,PIPE_ACCESS_DUPLEX|FILE_FLAG_FIRST_PIPE_INSTANCE,
+        md::Handle pipe(CreateNamedPipeW(pipePath.c_str(),PIPE_ACCESS_DUPLEX|FILE_FLAG_FIRST_PIPE_INSTANCE,
             PIPE_TYPE_MESSAGE|PIPE_READMODE_MESSAGE|PIPE_WAIT,1,sizeof(MD_REPLY),sizeof(MD_REQUEST),0,nullptr));
         if(!pipe)return;
         if(!ConnectNamedPipe(pipe.value,nullptr)&&GetLastError()!=ERROR_PIPE_CONNECTED)return;
@@ -41,7 +46,7 @@ static void DelayedPipeTest(){
         WriteFile(pipe.value,&reply,sizeof(reply),&bytes,nullptr);FlushFileBuffers(pipe.value);
         DisconnectNamedPipe(pipe.value);
     });
-    if(md::ServiceCall(md::Request(MdList)).Error)throw std::runtime_error("Delayed pipe reconnect failed");
+    if(md::ServiceCall(md::Request(MdList),pipePath.c_str()).Error)throw std::runtime_error("Delayed pipe reconnect failed");
 }
 void TransportTests() {
     Roundtrip(MD_VERSION,false,0);

@@ -1,19 +1,12 @@
 #include "client.h"
 #include "detach.h"
 #include "memdisk/capacity.h"
+#include "memdisk/json.h"
 #include <iostream>
 #include <string>
 
 static void JsonString(const WCHAR* text) {
-    std::wcout << L'"';
-    for (; *text; ++text) {
-        if (*text == L'"' || *text == L'\\') std::wcout << L'\\' << *text;
-        else if (*text == L'\r') std::wcout << L"\\r";
-        else if (*text == L'\n') std::wcout << L"\\n";
-        else if (*text == L'\t') std::wcout << L"\\t";
-        else if (*text >= 32) std::wcout << *text;
-    }
-    std::wcout << L'"';
+    md::WriteJsonString(std::wcout,text);
 }
 static void Print(const MD_REPLY& r, bool json) {
     if (json) {
@@ -41,7 +34,7 @@ static void Print(const MD_REPLY& r, bool json) {
 }
 int wmain(int argc, wchar_t** argv) {
     if (argc < 2) {
-        std::wcout << L"MemDisk 0.1.6 (administrator)\n"
+        std::wcout << L"MemDisk 0.1.8 (administrator)\n"
             L"  list [--json]\n  driver-list [--json]\n"
             L"  create --mib 256 --fs ntfs|exfat [--letter R] [--label Build] [--json]\n"
             L"  unmount ID | mount ID | destroy ID --yes [--json]\n"

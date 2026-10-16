@@ -78,4 +78,6 @@ if ($LASTEXITCODE) { throw 'CMake configure failed.' }
 if ($LASTEXITCODE) { throw 'Build failed.' }
 & ctest --test-dir $build -C $Configuration --output-on-failure
 if ($LASTEXITCODE) { throw 'Tests failed.' }
+& powershell.exe -NoProfile -File (Join-Path $PSScriptRoot 'Test-Uninstall.ps1')
+if ($LASTEXITCODE) { throw 'Uninstall state regression failed.' }
 & (Join-Path $PSScriptRoot 'Package.ps1') -Configuration $Configuration

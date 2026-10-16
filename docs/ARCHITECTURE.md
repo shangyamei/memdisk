@@ -79,3 +79,12 @@ nonpaged allocation and Windows formatting can still fail below that budget.
 The current service serializes management and polling. Long formatting can
 temporarily interrupt telemetry, but it never forwards application file I/O.
 Future revisions should separate long-running operations from status queries.
+
+The GUI model owns the benchmark worker. Start and management admission share
+the model mutex; mount/unmount/destroy for the active benchmark instance are
+rejected until worker-owned resources close. Rendering uses snapshots, while
+admission rechecks live state. Identity-only volume handles are scoped narrowly.
+Benchmark file I/O remains QD1, using explicit-offset overlapped requests so the
+worker can cancel a pending request. Cancellation is drained before cleanup;
+an unresponsive underlying driver can still delay completion. Stop retains busy
+state until cleanup finishes. Other GUI/CLI processes rely on normal volume locks.

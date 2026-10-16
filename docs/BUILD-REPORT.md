@@ -1,5 +1,37 @@
 # Build verification — 2026-10-16
 
+## Uninstall state handling — 0.1.8 (2026-10-17)
+
+- VS 2026 / SDK/WDK 28000 Release build, CTest (1/1), development signing,
+  packaging and Windows PowerShell 5.1 package-hash checks passed.
+- Pure mocked uninstall regressions pass under Windows PowerShell 5.1 and 7:
+  stopped/missing/running-empty driver, active disks, access denial, running driver
+  with missing control device, new disks during service removal, and stop failure.
+  Malformed JSON/protocol responses are rejected.
+- CLI JSON escaping covers non-ASCII errors, control characters, quotes, slashes
+  and surrogate pairs. Read-only actual preflight in both PowerShell versions,
+  with code page 936, returned SCM Missing, CLI exit 1/error 2, zero disks and passed.
+- SCM adapters were only queried. No uninstall, service stop/deletion, driver
+  loading, formatting or VM uninstall execution was performed on the build host.
+  Full lifecycle validation remains in UPGRADE-0.1.8.md.
+
+## Benchmark lifecycle fix — 0.1.7 (2026-10-17)
+
+- VS 2026, SDK/WDK 28000, Release x64: all targets built, CTest passed (1/1),
+  and the development-signed 0.1.7 ZIP was generated.
+- Regression tasks hold cleanup open and verify Running remains true until
+  resources are released, covering success, failure, exception and cancellation.
+  The active instance rejects conflicting operation types; another ID is allowed.
+- A real overlapped named-pipe read is cancelled and drained, then the pipe/event
+  are reused successfully. No driver or filesystem volume is needed for the test.
+- Initial CTest was blocked by transport tests using the live service pipe name.
+  Tests now use a per-process test pipe; production calls retain their default
+  endpoint. No running service was stopped and no existing disk was changed.
+- Source line/whitespace checks pass. GUI/file-I/O changes require VM benchmark
+  completion, stop and immediate safe-detach checks in UPGRADE-0.1.7.md.
+- No driver installation/loading, formatting or VM runtime regression was run.
+  These fixes do not prove the reported NTFS lock refusal's root cause.
+
 ## Capacity admission update — 0.1.6
 
 - VS 2026, SDK/WDK 28000, Release x64: all targets compiled and CTest passed

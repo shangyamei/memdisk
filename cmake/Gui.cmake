@@ -16,6 +16,6 @@ target_include_directories(memdisk-widgets PUBLIC ${imgui_SOURCE_DIR}
 target_link_libraries(memdisk-widgets PUBLIC d3d11 dxgi dwmapi)
 add_executable(memdisk-ui WIN32 src/gui/main.cpp src/gui/window.cpp
   src/gui/model.cpp src/gui/theme.cpp src/gui/view.cpp src/gui/panels.cpp src/gui/benchmark.cpp
-  src/gui/disk_list.cpp src/gui/monitor_view.cpp)
+  src/gui/disk_list.cpp src/gui/monitor_view.cpp src/gui/benchmark_job.cpp src/gui/benchmark_io.cpp)
 target_link_libraries(memdisk-ui PRIVATE memdisk-common memdisk-widgets shell32)
 target_link_options(memdisk-ui PRIVATE "/MANIFESTUAC:level='requireAdministrator' uiAccess='false'")

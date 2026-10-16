@@ -33,11 +33,11 @@ Reference: https://learn.microsoft.com/en-us/windows-hardware/drivers/install/th
 
 ## 2. Copy and install
 
-Copy `dist/MemDisk-0.1.6-dev-win-x64.zip` from the build machine to the VM.
+Copy `dist/MemDisk-0.1.8-dev-win-x64.zip` from the build machine to the VM.
 In elevated built-in Windows PowerShell:
 
 ```powershell
-Expand-Archive -LiteralPath C:\Users\Public\MemDisk-0.1.6-dev-win-x64.zip -DestinationPath C:\MemDisk
+Expand-Archive -LiteralPath C:\Users\Public\MemDisk-0.1.8-dev-win-x64.zip -DestinationPath C:\MemDisk
 Set-Location C:\MemDisk
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Check-Package.ps1
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Install.ps1
@@ -97,6 +97,8 @@ To manage a disk explicitly:
 
 Hold a file open from another process and verify safe unmount refuses to proceed.
 Release the handle before retrying. Do not run tests against physical disks.
+For benchmark completion/cancellation and immediate detach regression, follow
+UPGRADE-0.1.7.md. Host tests cannot replace these NTFS/exFAT checks.
 
 ## 5. Collect diagnostics on failure
 
@@ -127,6 +129,9 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Uninstall.ps1
 ```
 
 The uninstall refuses to proceed if it cannot establish the active-disk state.
+If the control device is absent, it also checks SCM to confirm the driver is
+stopped or absent; this supports reboot and partial uninstall without starting
+the driver. Follow UPGRADE-0.1.8.md for the regression matrix.
 After uninstalling, find the exact supplied certificate thumbprint:
 
 ```powershell

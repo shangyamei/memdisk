@@ -1,5 +1,21 @@
 # Build verification — 2026-10-16
 
+## Capacity admission update — 0.1.6
+
+- VS 2026, SDK/WDK 28000, Release x64: all targets compiled and CTest passed
+  (1/1). Standard build generated the development-signed 0.1.6 ZIP.
+- Capacity regression covers exact 80% arithmetic, rounding, maximum unsigned
+  input without overflow, positive MiB alignment, signed-offset bounds, and
+  capacities above the former single-disk and aggregate limits.
+- CLI rejects zero, negative, fractional and overflowing capacities with exit 2
+  before service access. Source line limits and git diff whitespace checks pass.
+- Sandbox MSBuild FileTracker access denial required running the standard build
+  outside the sandbox. Old 0.1.5 dist/memdisk.sys was occupied; the 0.1.6 package
+  uses its own output directory.
+- No driver load, disk creation or formatting occurred on this host. Dynamic
+  chunk allocation/rollback and larger NTFS/exFAT disks require the isolated VM
+  regressions in CAPACITY-UPDATE.md.
+
 ## VS 2026 build support — 0.1.5
 
 - VS Community 2026 18.8, MSVC 19.51.36252.0, CMake 4.4.4, Release x64.

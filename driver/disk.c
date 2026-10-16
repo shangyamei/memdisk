@@ -19,7 +19,6 @@ NTSTATUS MdSetMounted(MD_DISK* disk, BOOLEAN mounted)
 NTSTATUS MdCreateDisk(const MD_REQUEST* request, MD_REPLY* reply)
 {
     ULONG slot, i;
-    ULONGLONG total = 0;
     UNICODE_STRING name;
     /* Allow file namespace traversal; security.c separately gates raw opens. */
     UNICODE_STRING sddl = RTL_CONSTANT_STRING(MD_DISK_SDDL);
@@ -27,17 +26,15 @@ NTSTATUS MdCreateDisk(const MD_REQUEST* request, MD_REPLY* reply)
     PDEVICE_OBJECT device;
     MD_DISK* disk;
     NTSTATUS status;
-    if (request->Bytes < 64 * MD_MIB || request->Bytes > MD_MAX_DISK_BYTES ||
-        request->Bytes % MD_MIB || request->Letter < L'D' || request->Letter > L'Z' ||
+    if (!MdValidCapacity(request->Bytes) ||
+        request->Letter < L'D' || request->Letter > L'Z' ||
         (request->FileSystem != MdNtfs && request->FileSystem != MdExfat))
         return STATUS_INVALID_PARAMETER;
     for (slot = 0; slot < MD_MAX_DISKS && MdDisks[slot]; ++slot) {}
     if (slot == MD_MAX_DISKS) return STATUS_TOO_MANY_NAMES;
     for (i = 0; i < MD_MAX_DISKS; ++i) if (MdDisks[i]) {
         if (MdDisks[i]->Info.Letter == request->Letter) return STATUS_OBJECT_NAME_COLLISION;
-        total += MdDisks[i]->Info.Bytes;
     }
-    if (request->Bytes > MD_MAX_TOTAL_BYTES - total) return STATUS_INSUFFICIENT_RESOURCES;
     RtlStringCchPrintfW(deviceName, RTL_NUMBER_OF(deviceName), L"\\Device\\MemDisk%llu",
         (ULONGLONG)InterlockedIncrement64(&MdNextId));
     RtlInitUnicodeString(&name, deviceName);

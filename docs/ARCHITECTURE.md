@@ -62,11 +62,19 @@ destroying an instance. No force-removal command is provided.
 
 ## Current limits
 
-Development defaults are 64–1024 MiB per disk, <=8 disks, <=4 GiB total. Service
-admission additionally requires the requested disk to be <=25% of physical RAM
-and at least 512 MiB currently available after allocation. These are initial
-validation limits, not finalized product specifications or a guarantee against
-concurrent allocations by other software.
+Capacity is a positive whole number of MiB. There is no fixed single-disk or
+aggregate capacity cap; the instance count remains <=8. Immediately before
+creation the service requires requested data bytes <=floor(available physical
+bytes * 4/5), using GlobalMemoryStatusEx. Existing disks already reduce available
+memory; they are not counted twice. This replaces the 25%-of-total and 512 MiB
+reserve policies. The GUI displays the current whole-MiB budget.
+
+The driver allocates its chunk pointer table dynamically, includes it in reported
+metadata, and frees both table and completed data chunks on failure. It rejects
+invalid alignment and capacities beyond signed 64-bit storage offsets. The v1
+wire structures are unchanged. The memory policy is service admission, not a
+reservation against other applications or direct administrator IOCTLs. Actual
+nonpaged allocation and Windows formatting can still fail below that budget.
 
 The current service serializes management and polling. Long formatting can
 temporarily interrupt telemetry, but it never forwards application file I/O.

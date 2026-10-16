@@ -7,11 +7,11 @@
 #include <wdmsec.h>
 #include "memdisk/protocol.h"
 #include "memdisk/security.h"
+#include "memdisk/capacity.h"
 
 #define MD_TAG 'kDsM'
 #define MD_MIN(a,b) (((a)<(b))?(a):(b))
 #define MD_CHUNK_BYTES (16u * 1024u * 1024u)
-#define MD_MAX_CHUNKS 64u
 #define MD_CONTROL_KIND 1u
 #define MD_DISK_KIND 2u
 C_ASSERT(sizeof(MD_REQUEST) == 96);
@@ -23,8 +23,8 @@ typedef struct MD_DISK {
     volatile LONG Removing;
     PDEVICE_OBJECT Device;
     MD_DISK_INFO Info;
-    ULONG ChunkCount;
-    PVOID Chunks[MD_MAX_CHUNKS];
+    SIZE_T ChunkCount;
+    PVOID* Chunks;
     WCHAR DeviceName[64];
     WCHAR LinkName[32];
 } MD_DISK;

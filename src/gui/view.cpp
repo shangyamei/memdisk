@@ -1,4 +1,5 @@
 #include "app.h"
+#include "memdisk/capacity.h"
 
 namespace ui {
 static bool WindowButton(const char* id,int symbol) {
@@ -29,15 +30,21 @@ static void Title() {
 }
 static void CreateDiskDialog(Model& model) {
     if(!ImGui::BeginPopupModal("创建内存磁盘",nullptr,ImGuiWindowFlags_AlwaysAutoResize))return;
-    static int mib=256,fs=0;static char label[12]="MemDisk";
-    ImGui::SetNextItemWidth(190*Host.Dpi);ImGui::InputInt("容量 MiB",&mib);
+    static LONGLONG mib=256;static int fs=0;static char label[12]="MemDisk";
+    ImGui::SetNextItemWidth(190*Host.Dpi);ImGui::InputScalar("容量 MiB",ImGuiDataType_S64,&mib);
     ImGui::SetNextItemWidth(190*Host.Dpi);ImGui::Combo("文件系统",&fs,"NTFS\0exFAT\0");
     ImGui::SetNextItemWidth(190*Host.Dpi);ImGui::InputText("卷标",label,sizeof(label));
     ImGui::TextDisabled("盘符自动分配 R–Z · 全额非分页预分配");
-    ImGui::TextDisabled("当前验证版：64–1024 MiB / 盘，最多 8 盘");
-    MEMORYSTATUSEX memory{sizeof(memory)};GlobalMemoryStatusEx(&memory);
-    ImGui::Text("系统可用：%.2f GiB",memory.ullAvailPhys/(1024.*MD_MIB));
-    const bool valid=mib>=64&&mib<=1024;
+    ImGui::TextDisabled("容量不超过创建时可用内存的 80%，最多 8 盘");
+    MEMORYSTATUSEX memory{sizeof(memory)};
+    const bool memoryKnown=GlobalMemoryStatusEx(&memory)!=FALSE;
+    const auto budget=MdCapacityBudget(memory.ullAvailPhys);
+    if(memoryKnown){
+        ImGui::Text("系统可用：%.2f GiB",memory.ullAvailPhys/(1024.*MD_MIB));
+        ImGui::Text("当前可创建上限：%llu MiB",budget/MD_MIB);
+    }else ImGui::TextDisabled("无法获取系统可用内存");
+    const bool valid=memoryKnown&&mib>0&&static_cast<ULONGLONG>(mib)<=budget/MD_MIB&&
+        static_cast<ULONGLONG>(mib)<=0x7fffffffffffffffull/MD_MIB;
     ImGui::BeginDisabled(!valid);
     if(ImGui::Button("创建并挂载")){
         auto request=md::Request(MdCreate);request.Bytes=static_cast<ULONGLONG>(mib)*MD_MIB;

@@ -1,11 +1,12 @@
 #include "service.h"
+#include "memdisk/capacity.h"
 
 namespace md {
 static MD_REPLY Create(MD_REQUEST request) {
-    if (request.Bytes < 64 * MD_MIB || request.Bytes > MD_MAX_DISK_BYTES || request.Bytes % MD_MIB ||
+    if (!MdValidCapacity(request.Bytes) ||
         !ValidLabel(request.Label, _countof(request.Label)) ||
         (request.FileSystem != MdNtfs && request.FileSystem != MdExfat))
-        return Failure(ERROR_INVALID_PARAMETER, L"Capacity: 64..1024 MiB; label: ASCII, <=11 characters");
+        return Failure(ERROR_INVALID_PARAMETER, L"Capacity: positive whole MiB; label: ASCII, <=11 characters");
     const DWORD drives = GetLogicalDrives();
     if (!request.Letter) for (WCHAR letter = L'R'; letter <= L'Z'; ++letter)
         if (!(drives & (1u << (letter-L'A')))) { request.Letter = letter; break; }
@@ -13,8 +14,10 @@ static MD_REPLY Create(MD_REQUEST request) {
         return Failure(ERROR_ALREADY_ASSIGNED, L"Drive letter unavailable");
     MEMORYSTATUSEX memory{sizeof(memory)};
     if (!GlobalMemoryStatusEx(&memory)) return Failure(GetLastError(), L"Memory status");
-    if (request.Bytes > memory.ullTotalPhys / 4 || memory.ullAvailPhys < request.Bytes + 512 * MD_MIB)
-        return Failure(ERROR_NOT_ENOUGH_MEMORY, L"Memory admission: <=25% physical, keep >=512 MiB available");
+    const auto budget = MdCapacityBudget(memory.ullAvailPhys);
+    if (request.Bytes > budget)
+        return Failure(ERROR_NOT_ENOUGH_MEMORY, L"Capacity exceeds 80% of available physical memory; maximum now: " +
+            std::to_wstring(budget / MD_MIB) + L" MiB");
     auto reply = DriverCall(request);
     if (reply.Error) return reply;
     const auto disk = reply.Disks[0];

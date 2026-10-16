@@ -1,4 +1,4 @@
-# Development build 0.1.5 — implementation and validation status
+# Development build 0.1.6 — implementation and validation status
 
 This is the first buildable VM validation milestone. It is not completion of the
 entire SRS and is not a production release. Do not put valuable data on it.
@@ -7,6 +7,11 @@ entire SRS and is not a production release. Do not put valuable data on it.
 
 - Split WDM driver: allocation, lifetime, I/O, storage queries and volume queries.
 - Entire nonpaged data storage allocated before publication; allocation rollback.
+- Capacity admission: each creation may use up to 80% of currently available
+  physical RAM. Fixed single-disk/aggregate caps and the 512 MiB reserve are
+  removed; positive whole MiB and <=8 instances remain. Dynamic chunk metadata
+  removes the former 1 GiB driver backing limit. See CAPACITY-UPDATE.md for
+  component replacement and VM checks; larger-disk runtime validation is pending.
 - Multiple fixed-size superfloppy-style RAM disks and global drive letters.
 - Service orchestration of NTFS/exFAT formatting and lock/dismount operations.
 - CLI create/list/mount/unmount/destroy with JSON output.

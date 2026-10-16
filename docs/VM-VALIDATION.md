@@ -3,7 +3,9 @@
 ## 1. Preparation
 
 Use an isolated Windows 11 x64 VM with a snapshot, preferably >=4 GiB RAM.
-The development build currently limits each RAM disk to 64–1024 MiB.
+Each creation is limited to 80% of currently available physical memory, in whole
+MiB, with no fixed single-disk/aggregate capacity cap. Start small for smoke tests;
+follow CAPACITY-UPDATE.md for larger-capacity and low-memory validation.
 The host only builds; do not run the following installation on the build host.
 
 The VM needs only its built-in Windows PowerShell 5.1, `bcdedit`, `certutil`,
@@ -31,11 +33,11 @@ Reference: https://learn.microsoft.com/en-us/windows-hardware/drivers/install/th
 
 ## 2. Copy and install
 
-Copy `dist/MemDisk-0.1.5-dev-win-x64.zip` from the build machine to the VM.
+Copy `dist/MemDisk-0.1.6-dev-win-x64.zip` from the build machine to the VM.
 In elevated built-in Windows PowerShell:
 
 ```powershell
-Expand-Archive -LiteralPath C:\Users\Public\MemDisk-0.1.5-dev-win-x64.zip -DestinationPath C:\MemDisk
+Expand-Archive -LiteralPath C:\Users\Public\MemDisk-0.1.6-dev-win-x64.zip -DestinationPath C:\MemDisk
 Set-Location C:\MemDisk
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Check-Package.ps1
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Install.ps1

@@ -4,6 +4,7 @@
 #include <type_traits>
 #include "client.h"
 #include "memdisk/telemetry.h"
+#include "memdisk/capacity.h"
 #include <stdexcept>
 
 static_assert(std::is_standard_layout_v<MD_REQUEST>);
@@ -20,6 +21,21 @@ int main(){
     std::cout<<"Shared x64 ABI verified: request="<<sizeof(MD_REQUEST)
         <<", reply="<<sizeof(MD_REPLY)<<"\n";
     try {
+        Require(MdCapacityBudget(0)==0);
+        Require(MdCapacityBudget(4)==3);
+        Require(MdCapacityBudget(5)==4);
+        Require(MdCapacityBudget(10*MD_MIB)==8*MD_MIB);
+        Require(MdCapacityBudget(0xffffffffffffffffull)==0xccccccccccccccccull);
+        Require(!MdValidCapacity(0));
+        Require(!MdValidCapacity(MD_MIB+1));
+        Require(MdValidCapacity(MD_MIB));
+        Require(MdValidCapacity(2048*MD_MIB));
+        Require(MdValidCapacity(8192*MD_MIB));
+        Require(MdValidCapacity(0x7ffffffffff00000ull));
+        Require(!MdValidCapacity(0x8000000000000000ull));
+        // Accept the last whole MiB within 80%, reject the next one.
+        const auto budget=MdCapacityBudget(10*MD_MIB+3);
+        Require(8*MD_MIB<=budget && 9*MD_MIB>budget);
         Require(md::ValidLabel(L"Build_01",9));
         Require(!md::ValidLabel(L"bad&cmd",8));
         Require(!md::ValidLabel(L"abcdefghijkl",13));

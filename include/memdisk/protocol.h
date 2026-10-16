@@ -8,8 +8,6 @@
 #define MD_MAX_DISKS 8u
 #define MD_LATENCY_BUCKETS 24u
 #define MD_MIB (1024ull * 1024ull)
-#define MD_MAX_DISK_BYTES (1024ull * MD_MIB)
-#define MD_MAX_TOTAL_BYTES (4096ull * MD_MIB)
 #define MD_CONTROL_PATH L"\\\\.\\MemDiskControl"
 #define MD_PIPE_PATH L"\\\\.\\pipe\\MemDisk.v1"
 #define MD_DEVICE_TYPE 0x8337u

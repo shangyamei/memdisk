@@ -36,7 +36,7 @@ NTSTATUS MdTransfer(MD_DISK* disk, PIRP irp, PIO_STACK_LOCATION stack, ULONG_PTR
        Request-wide atomicity is not promised; 512-byte sectors are protected. */
     while (done < length) {
         ULONGLONG pos = (ULONGLONG)offset + done;
-        ULONG chunk = (ULONG)(pos / MD_CHUNK_BYTES);
+        SIZE_T chunk = (SIZE_T)(pos / MD_CHUNK_BYTES);
         ULONG within = (ULONG)(pos % MD_CHUNK_BYTES);
         ULONG count = MD_MIN(length - done, MD_MIN(MD_CHUNK_BYTES - within, 64u * 1024u));
         KIRQL oldIrql;

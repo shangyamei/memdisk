@@ -1,5 +1,6 @@
 #include "client.h"
 #include "detach.h"
+#include "memdisk/capacity.h"
 #include <iostream>
 #include <string>
 
@@ -40,7 +41,7 @@ static void Print(const MD_REPLY& r, bool json) {
 }
 int wmain(int argc, wchar_t** argv) {
     if (argc < 2) {
-        std::wcout << L"MemDisk 0.1.5 (administrator)\n"
+        std::wcout << L"MemDisk 0.1.6 (administrator)\n"
             L"  list [--json]\n  driver-list [--json]\n"
             L"  create --mib 256 --fs ntfs|exfat [--letter R] [--label Build] [--json]\n"
             L"  unmount ID | mount ID | destroy ID --yes [--json]\n"
@@ -68,7 +69,9 @@ int wmain(int argc, wchar_t** argv) {
             else if (arg == L"--mib" && i+1 < argc) {
                 const std::wstring value = argv[++i]; size_t used = 0;
                 const auto mib = std::stoull(value, &used);
-                if (used != value.size() || mib < 64 || mib > 1024) throw 1;
+                if (value.empty() || value.find_first_not_of(L"0123456789") != std::wstring::npos ||
+                    used != value.size() || mib > 0x7fffffffffffffffull / MD_MIB ||
+                    !MdValidCapacity(mib * MD_MIB)) throw 1;
                 request.Bytes = mib * MD_MIB;
             } else if (arg == L"--fs" && i+1 < argc) {
                 const std::wstring fs = argv[++i];

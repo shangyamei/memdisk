@@ -19,6 +19,12 @@ entire SRS and is not a production release. Do not put valuable data on it.
 
 ## Must be verified on the target VM
 
+The build script supports VS 2022 and VS 2026, with automatic discovery or an
+explicit `-VisualStudio` selection. VS 2026 requires CMake 4.2+; SDK/WDK remains
+10.0.26100.0 by default, with an explicit `-WdkVersion` override available.
+VS 2026 host compilation, CTest and packaging passed using SDK/WDK 28000;
+see BUILD-REPORT.md. Toolchain support does not establish VM runtime compatibility.
+
 The build host compiles and checks binaries only. Successful compilation does not
 prove kernel safety or filesystem compatibility. The VM must establish:
 

@@ -1,4 +1,29 @@
-# Build verification — 0.1.2 — 2026-10-16
+# Build verification — 2026-10-16
+
+## VS 2026 build support — 0.1.5
+
+- VS Community 2026 18.8, MSVC 19.51.36252.0, CMake 4.4.4, Release x64.
+- This host has SDK/WDK 10.0.28000.0, not the default WDK 10.0.26100.0.
+  Validation explicitly overrides WDK_VERSION; the project default is unchanged.
+- Automatic and explicit VS 2026 discovery/configuration succeeded. All targets
+  compiled, CTest passed (1/1), and the development-signed ZIP was generated.
+- C++ targets explicitly enable /EHsc for exception unwinding; kernel C is unaffected.
+- Packaging can discover installed SDK signing tools if SDK 26100 is absent.
+- The build entry forwards Windows PowerShell 5.1 invocations to PowerShell 7
+  with the original arguments. The redirected vswhere stream is explicitly
+  decoded as UTF-8, including when PowerShell 7 inherits a legacy code page.
+- Initial sandbox MSBuild FileTracker initialization failed with E_ACCESSDENIED;
+  the complete build/test/package run succeeded outside the tool sandbox.
+- VS 2022 remains supported by selection logic but is not installed on this host
+  and was not rebuilt in this run. No VM runtime verification was performed.
+
+Reproduce on this host:
+
+```powershell
+pwsh -NoProfile -File .\scripts\Build.ps1 -VisualStudio 2026 -WdkVersion 10.0.28000.0
+```
+
+The results below are the earlier 0.1.2 validation record.
 
 ## Build host results
 

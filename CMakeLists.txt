@@ -6,6 +6,7 @@ endif()
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 add_compile_options(/W4 /utf-8)
+add_compile_options($<$<COMPILE_LANGUAGE:CXX>:/EHsc>)
 add_compile_definitions(UNICODE _UNICODE WIN32_LEAN_AND_MEAN NOMINMAX)
 include_directories(${PROJECT_SOURCE_DIR}/include)
 add_library(memdisk-common STATIC src/common/driver_client.cpp src/common/pipe_client.cpp

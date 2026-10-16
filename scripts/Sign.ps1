@@ -1,6 +1,18 @@
 param([Parameter(Mandatory)][string]$Driver, [Parameter(Mandatory)][string]$PublicCertificate)
 $ErrorActionPreference = 'Stop'
 $root = Split-Path $PSScriptRoot -Parent
+$sdkBin = "${env:ProgramFiles(x86)}\Windows Kits\10\bin"
+$signTool = Join-Path $sdkBin '10.0.26100.0/x64/signtool.exe'
+if (-not (Test-Path -LiteralPath $signTool)) {
+    $installed = Get-ChildItem -LiteralPath $sdkBin -Directory |
+        Where-Object { $_.Name -match '^10\.0\.\d+\.0$' } |
+        Sort-Object { [version]$_.Name } -Descending
+    $signTool = $installed | ForEach-Object { Join-Path $_.FullName 'x64/signtool.exe' } |
+        Where-Object { Test-Path -LiteralPath $_ } | Select-Object -First 1
+}
+if (-not $signTool -or -not (Test-Path -LiteralPath $signTool)) {
+    throw 'Install Windows SDK x64 signing tools on the build host.'
+}
 $signDir = Join-Path $root 'out/signing'
 New-Item -ItemType Directory -Path $signDir -Force | Out-Null
 $pfxPath = Join-Path $signDir 'development.pfx'
@@ -30,7 +42,6 @@ $cert = [System.Security.Cryptography.X509Certificates.X509Certificate2]::new($p
 [IO.File]::WriteAllBytes($PublicCertificate, $cert.Export(
     [System.Security.Cryptography.X509Certificates.X509ContentType]::Cert))
 $cert.Dispose()
-$signTool = "${env:ProgramFiles(x86)}\Windows Kits\10\bin\10.0.26100.0\x64\signtool.exe"
 & $signTool sign /fd SHA256 /f $pfxPath /p $password $Driver
 if ($LASTEXITCODE) { throw 'Development signing failed.' }
 # Self-signed root is intentionally not trusted on the build host.

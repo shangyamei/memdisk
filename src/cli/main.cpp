@@ -34,7 +34,7 @@ static void Print(const MD_REPLY& r, bool json) {
 }
 int wmain(int argc, wchar_t** argv) {
     if (argc < 2) {
-        std::wcout << L"MemDisk 0.1.8 (administrator)\n"
+        std::wcout << L"MemDisk 0.1.9 (administrator)\n"
             L"  list [--json]\n  driver-list [--json]\n"
             L"  create --mib 256 --fs ntfs|exfat [--letter R] [--label Build] [--json]\n"
             L"  unmount ID | mount ID | destroy ID --yes [--json]\n"

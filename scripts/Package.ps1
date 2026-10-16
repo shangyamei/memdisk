@@ -1,7 +1,7 @@
 param([ValidateSet('Release','Debug')][string]$Configuration = 'Release')
 $ErrorActionPreference = 'Stop'
 $root = Split-Path $PSScriptRoot -Parent
-$dist = Join-Path $root 'dist/MemDisk-0.1.8-dev-win-x64'
+$dist = Join-Path $root 'dist/MemDisk-0.1.9-dev-win-x64'
 New-Item -ItemType Directory -Path $dist -Force | Out-Null
 $binary = Join-Path $root "out/build/$Configuration"
 foreach ($name in @('memdisk.sys','memdisk.exe','memdisk-service.exe','memdisk-ui.exe','memdisk-access-test.exe')) {
@@ -18,6 +18,7 @@ Copy-Item -LiteralPath (Join-Path $root 'docs/STATUS.md') -Destination $dist -Fo
 Copy-Item -LiteralPath (Join-Path $root 'docs/CAPACITY-UPDATE.md') -Destination $dist -Force
 Copy-Item -LiteralPath (Join-Path $root 'docs/UPGRADE-0.1.7.md') -Destination $dist -Force
 Copy-Item -LiteralPath (Join-Path $root 'docs/UPGRADE-0.1.8.md') -Destination $dist -Force
+Copy-Item -LiteralPath (Join-Path $root 'docs/UPGRADE-0.1.9.md') -Destination $dist -Force
 Copy-Item -LiteralPath (Join-Path $root 'docs/UPGRADE-0.1.1.md') -Destination $dist -Force
 Copy-Item -LiteralPath (Join-Path $root 'docs/UPGRADE-0.1.2.md') -Destination $dist -Force
 Copy-Item -LiteralPath (Join-Path $root 'docs/UPGRADE-0.1.3.md') -Destination $dist -Force

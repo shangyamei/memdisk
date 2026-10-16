@@ -1,5 +1,24 @@
 # Build verification — 2026-10-16
 
+## File namespace deletion — 0.1.9 (2026-10-17)
+
+- User reports ordinary-token Git clone failing to unlink .git/config.lock.
+  Supplied icacls output shows inherited Modify for Authenticated Users on root,
+  .git and config.lock; attrib shows Archive only, without Read-only.
+- Code inspection found missing DELETE in the device namespace descriptor,
+  despite FILE_DEVICE_SECURE_OPEN and a root ACL that permits Modify.
+  Added namespace DELETE and changed the private security class GUID to avoid
+  persisted defaults. Raw captured-token authorization and management ACLs remain.
+- VS 2026 / SDK/WDK 28000 Release build, CTest (1/1), mocked uninstall tests,
+  signing and packaging passed. Namespace DELETE and denial of WRITE_DAC/
+  WRITE_OWNER are checked using an ordinary restricted token on the host.
+- User confirmed on 2026-10-17 that the reported Git clone failure is fixed.
+  This is user-reported evidence for the original ordinary-user scenario.
+- Extended guest access probe covers nested config.lock rename/replace/delete
+  and raw DELETE denial. The full NTFS/exFAT probe and kernel authorization matrix
+  remain pending VM validation. Build verification did not load the driver or
+  operate on R:. See UPGRADE-0.1.9.md.
+
 ## Uninstall state handling — 0.1.8 (2026-10-17)
 
 - VS 2026 / SDK/WDK 28000 Release build, CTest (1/1), development signing,

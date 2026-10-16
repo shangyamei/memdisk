@@ -32,11 +32,14 @@ static bool Allowed(const WCHAR* sddl,HANDLE token,DWORD access) {
 void SecurityTests(){
     auto token=md::RestrictedUserToken();
     if(!token)throw std::runtime_error("Cannot create ordinary-token test context");
-    if(!Allowed(MD_DISK_SDDL,token.value,FILE_GENERIC_READ|FILE_GENERIC_WRITE|FILE_GENERIC_EXECUTE))
+    if(!Allowed(MD_DISK_SDDL,token.value,FILE_GENERIC_READ|FILE_GENERIC_WRITE|FILE_GENERIC_EXECUTE|DELETE))
         throw std::runtime_error("Ordinary disk traversal denied");
+    if(Allowed(MD_DISK_SDDL,token.value,WRITE_DAC)||Allowed(MD_DISK_SDDL,token.value,WRITE_OWNER))
+        throw std::runtime_error("Ordinary device security modification granted");
     if(!Allowed(MD_ROOT_SDDL,token.value,FILE_GENERIC_READ|FILE_GENERIC_WRITE|DELETE))
         throw std::runtime_error("Ordinary root file modification denied");
-    if(Allowed(MD_ADMIN_SDDL,token.value,FILE_READ_DATA)||Allowed(MD_ADMIN_SDDL,token.value,FILE_WRITE_DATA))
+    if(Allowed(MD_ADMIN_SDDL,token.value,FILE_READ_DATA)||Allowed(MD_ADMIN_SDDL,token.value,FILE_WRITE_DATA)||
+        Allowed(MD_ADMIN_SDDL,token.value,DELETE))
         throw std::runtime_error("Ordinary raw/management access was granted");
     if(Allowed(MD_ROOT_SDDL,token.value,WRITE_DAC))throw std::runtime_error("Ordinary root ACL modification granted");
 }

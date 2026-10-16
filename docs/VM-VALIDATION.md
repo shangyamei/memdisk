@@ -33,11 +33,11 @@ Reference: https://learn.microsoft.com/en-us/windows-hardware/drivers/install/th
 
 ## 2. Copy and install
 
-Copy `dist/MemDisk-0.1.8-dev-win-x64.zip` from the build machine to the VM.
+Copy `dist/MemDisk-0.1.9-dev-win-x64.zip` from the build machine to the VM.
 In elevated built-in Windows PowerShell:
 
 ```powershell
-Expand-Archive -LiteralPath C:\Users\Public\MemDisk-0.1.8-dev-win-x64.zip -DestinationPath C:\MemDisk
+Expand-Archive -LiteralPath C:\Users\Public\MemDisk-0.1.9-dev-win-x64.zip -DestinationPath C:\MemDisk
 Set-Location C:\MemDisk
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Check-Package.ps1
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Install.ps1
@@ -62,6 +62,9 @@ Version 0.1.1 also uses a restricted token with the Administrators SID disabled
 and privileges removed: ordinary capacity/file operations must succeed, while
 raw data and management access must fail. This catches the gap in 0.1.0's
 administrator-only smoke test. No extra guest software is required.
+Version 0.1.9 additionally checks a nested .git/config.lock rename, replacement
+and explicit deletion sequence under the ordinary token, and denial of raw
+DELETE opens. Follow UPGRADE-0.1.9.md for optional Git-based checks.
 Version 0.1.2 also holds an actual test file open, checks that unmount safely
 refuses at FSCTL_LOCK_VOLUME, releases the handle, and verifies normal unmount,
 remount and destroy. Follow UPGRADE-0.1.2.md for old stuck instances.

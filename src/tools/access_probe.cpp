@@ -1,4 +1,5 @@
 #include "client.h"
+#include "file_operations.h"
 #include <array>
 #include <iostream>
 #include <stdexcept>
@@ -40,6 +41,7 @@ int wmain(int argc,wchar_t** argv) {
         const std::wstring root=std::wstring(1,letter)+L":\\";
         ULARGE_INTEGER total{},free{};
         Require(GetDiskFreeSpaceExW(root.c_str(),nullptr,&total,&free)&&total.QuadPart>0,"Read capacity denied");
+        probe::FileOperations(root);
         const auto path=root+L".memdisk-user-"+std::to_wstring(GetCurrentProcessId())+L".tmp";
         {
             md::Handle file(CreateFileW(path.c_str(),GENERIC_READ|GENERIC_WRITE|DELETE,0,nullptr,CREATE_NEW,
@@ -54,7 +56,7 @@ int wmain(int argc,wchar_t** argv) {
             Require(data==read,"File content mismatch");
         }
         const std::wstring raw=std::wstring(L"\\\\?\\GLOBALROOT")+target;
-        for(const DWORD access:{DWORD(GENERIC_READ),DWORD(GENERIC_WRITE)}){
+        for(const DWORD access:{DWORD(GENERIC_READ),DWORD(GENERIC_WRITE),DWORD(DELETE)}){
             md::Handle device(CreateFileW(raw.c_str(),access,FILE_SHARE_READ|FILE_SHARE_WRITE,nullptr,OPEN_EXISTING,0,nullptr));
             const DWORD error=GetLastError();
             Require(!device&&error==ERROR_ACCESS_DENIED,"Raw disk data access was not denied");
@@ -63,7 +65,7 @@ int wmain(int argc,wchar_t** argv) {
             FILE_SHARE_READ|FILE_SHARE_WRITE,nullptr,OPEN_EXISTING,0,nullptr));
         const DWORD error=GetLastError();
         Require(!control&&error==ERROR_ACCESS_DENIED,"Management access was not denied");
-        std::cout<<"PASS: ordinary-token capacity + file create/write/read/delete; raw data + management denied\n";
+        std::cout<<"PASS: ordinary-token capacity + file create/write/read/rename/replace/delete; raw data + management denied\n";
         if(restricted)RevertToSelf();return 0;
     }catch(const std::exception& error){
         if(restricted)RevertToSelf();std::cerr<<error.what()<<"\n";return 1;

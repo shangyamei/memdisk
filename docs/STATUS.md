@@ -1,4 +1,4 @@
-# Development build 0.1.8 — implementation and validation status
+# Development build 0.1.9 — implementation and validation status
 
 This is the first buildable VM validation milestone. It is not completion of the
 entire SRS and is not a production release. Do not put valuable data on it.
@@ -108,3 +108,13 @@ unknown/running-inaccessible states still stop cleanup. State is rechecked after
 management-service removal. CLI JSON escapes non-ASCII text to preserve errors
 across code pages. Mocked uninstall regressions run under Windows PowerShell 5.1;
 actual service/driver uninstall still requires VM validation. See UPGRADE-0.1.8.md.
+
+0.1.9 aligns namespace deletion permission with the existing root Modify ACL:
+ordinary users gain DELETE at the device namespace gate, while raw opens remain
+admin/SYSTEM-only through the captured-token check. The private disk security
+class changes to avoid reusing persisted old defaults. The guest access probe
+now covers separate rename/replace/delete operations and raw DELETE denial.
+The user confirmed the original ordinary-user Git clone failure is fixed on
+2026-10-17. Full NTFS/exFAT and raw-access runtime regressions remain pending;
+this does not establish the cause of the earlier volume-lock refusal.
+See UPGRADE-0.1.9.md.

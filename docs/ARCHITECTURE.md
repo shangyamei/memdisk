@@ -44,6 +44,12 @@ The driver disallows unload while any instance remains. The service additionally
 requires successful filesystem lock and dismount before removing a mount or
 destroying an instance. No force-removal command is provided.
 
+FILE_DEVICE_SECURE_OPEN applies the disk device descriptor to namespace opens.
+Its authenticated-user permissions include read/write/execute and DELETE, so
+the namespace gate permits normal file rename/delete requests before NTFS ACLs
+are applied. The separate raw-open captured-token check remains admin/SYSTEM-only;
+namespace deletion access is not raw disk deletion or data access authorization.
+
 ## User mode
 
 | Area | Responsibility |

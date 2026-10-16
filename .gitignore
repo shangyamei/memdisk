@@ -1,0 +1,12 @@
+out/
+dist/
+.cache/
+.vs/
+*.user
+*.pfx
+*.p12
+*.key
+*.password
+.env
+.env.*
+!.env.example
